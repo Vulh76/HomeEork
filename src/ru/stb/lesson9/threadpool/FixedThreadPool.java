@@ -1,4 +1,4 @@
-package ru.stb.lesson9;
+package ru.stb.lesson9.threadpool;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -8,6 +8,7 @@ public class FixedThreadPool implements ThreadPool {
     private final Thread[] threads;
     private final Queue<Runnable> tasks;
     private final Object lock = new Object();
+    private boolean stopRequest = false;
 
     public FixedThreadPool(int threadCount) {
         this.threadCount = threadCount;
@@ -33,10 +34,15 @@ public class FixedThreadPool implements ThreadPool {
         }
     }
 
+    @Override
+    public void stop() {
+        stopRequest = true;
+    }
+
     class Worker implements Runnable {
         @Override
         public void run() {
-            while (true) {
+            while (!stopRequest) {
                 Runnable task;
                 synchronized (lock) {
                     while(tasks.size() == 0) {
