@@ -7,7 +7,7 @@ public class Test {
         Factorial factorial = new Factorial();
         try {
             factorial.calc("src\\ru\\stb\\lesson9\\factorial\\test.txt");
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }

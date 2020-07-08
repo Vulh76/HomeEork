@@ -62,12 +62,12 @@ public class ScalableThreadPool implements ThreadPool {
                         }
                     }
                     task = tasks.poll();
+                    if(tasks.size() < threads.size() && threads.size() > minThreadCount) {
+                        threads.remove(Thread.currentThread());
+                        stopRequest = true;
+                    }
                 }
                 task.run();
-                if(tasks.size() < threads.size() && threads.size() > minThreadCount) {
-                    threads.remove(Thread.currentThread());
-                    break;
-                }
             }
         }
     }
