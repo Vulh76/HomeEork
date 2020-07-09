@@ -11,7 +11,6 @@ public class ScalableThreadPool implements ThreadPool {
     private final List<Thread> threads;
     private final Queue<Runnable> tasks;
     private final Object lock = new Object();
-    private boolean stopRequest = false;
 
     public ScalableThreadPool(int minThreadCount, int maxThreadCount) {
         this.minThreadCount = minThreadCount;
@@ -45,26 +44,28 @@ public class ScalableThreadPool implements ThreadPool {
 
     @Override
     public void stop() {
-        stopRequest = true;
+        for (Thread thread : threads) {
+            thread.interrupt();
+        }
     }
 
     class Worker implements Runnable {
         @Override
         public void run() {
-            while (!stopRequest) {
+            while (!Thread.currentThread().isInterrupted()) {
                 Runnable task;
                 synchronized (lock) {
                     while(tasks.size() == 0) {
                         try {
                             lock.wait();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                        } catch (InterruptedException ignore) { }
                     }
+                    if(Thread.currentThread().isInterrupted())
+                        break;
                     task = tasks.poll();
                     if(tasks.size() < threads.size() && threads.size() > minThreadCount) {
                         threads.remove(Thread.currentThread());
-                        stopRequest = true;
+                        Thread.currentThread().interrupt();
                     }
                 }
                 task.run();

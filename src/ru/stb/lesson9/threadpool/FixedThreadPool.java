@@ -7,8 +7,6 @@ public class FixedThreadPool implements ThreadPool {
     private final int threadCount;
     private final Thread[] threads;
     private final Queue<Runnable> tasks;
-    private final Object lock = new Object();
-    private boolean stopRequest = false;
 
     public FixedThreadPool(int threadCount) {
         this.threadCount = threadCount;
@@ -28,30 +26,32 @@ public class FixedThreadPool implements ThreadPool {
 
     @Override
     public void execute(Runnable runnable) {
-        synchronized (lock) {
+        synchronized (tasks) {
             tasks.add(runnable);
-            lock.notifyAll();
+            tasks.notifyAll();
         }
     }
 
     @Override
     public void stop() {
-        stopRequest = true;
+        for (Thread thread : threads) {
+            thread.interrupt();
+        }
     }
 
     class Worker implements Runnable {
         @Override
         public void run() {
-            while (!stopRequest) {
+            while (!Thread.currentThread().isInterrupted()) {
                 Runnable task;
-                synchronized (lock) {
+                synchronized (tasks) {
                     while(tasks.size() == 0) {
                         try {
-                            lock.wait();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                            tasks.wait();
+                        } catch (InterruptedException ignore) { }
                     }
+                    if(Thread.currentThread().isInterrupted())
+                        break;
                     task = tasks.poll();
                 }
                 task.run();
