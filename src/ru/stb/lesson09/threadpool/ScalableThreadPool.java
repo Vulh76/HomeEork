@@ -11,6 +11,7 @@ public class ScalableThreadPool implements ThreadPool {
     private final List<Thread> threads;
     private final Queue<Runnable> tasks;
     private final Object lock = new Object();
+    private volatile boolean isRunning = true;
 
     public ScalableThreadPool(int minThreadCount, int maxThreadCount) {
         this.minThreadCount = minThreadCount;
@@ -31,28 +32,28 @@ public class ScalableThreadPool implements ThreadPool {
 
     @Override
     public void execute(Runnable runnable) {
-        synchronized (lock) {
-            tasks.add(runnable);
-            if(tasks.size() > threads.size() && threads.size() < maxThreadCount) {
-                Thread thread = new Thread(new Worker());
-                threads.add(thread);
-                thread.start();
+        if(isRunning) {
+            synchronized (lock) {
+                tasks.add(runnable);
+                if(tasks.size() > threads.size() && threads.size() < maxThreadCount) {
+                    Thread thread = new Thread(new Worker());
+                    threads.add(thread);
+                    thread.start();
+                }
+                lock.notifyAll();
             }
-            lock.notifyAll();
         }
     }
 
     @Override
-    public void stop() {
-        for (Thread thread : threads) {
-            thread.interrupt();
-        }
+    public void shutdown() {
+        isRunning = false;
     }
 
-    class Worker implements Runnable {
+    private final class Worker implements Runnable {
         @Override
         public void run() {
-            while (!Thread.currentThread().isInterrupted()) {
+            while (isRunning && !Thread.currentThread().isInterrupted()) {
                 Runnable task;
                 synchronized (lock) {
                     while(tasks.size() == 0) {
@@ -60,8 +61,6 @@ public class ScalableThreadPool implements ThreadPool {
                             lock.wait();
                         } catch (InterruptedException ignore) { }
                     }
-                    if(Thread.currentThread().isInterrupted())
-                        break;
                     task = tasks.poll();
                     if(tasks.size() < threads.size() && threads.size() > minThreadCount) {
                         threads.remove(Thread.currentThread());

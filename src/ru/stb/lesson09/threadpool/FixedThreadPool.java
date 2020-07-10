@@ -4,12 +4,11 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 public class FixedThreadPool implements ThreadPool {
-    private final int threadCount;
     private final Thread[] threads;
     private final Queue<Runnable> tasks;
+    private volatile boolean isRunning = true;
 
     public FixedThreadPool(int threadCount) {
-        this.threadCount = threadCount;
         tasks = new ArrayDeque<>();
         threads = new Thread[threadCount];
         for (int i = 0; i < threadCount; i++) {
@@ -26,23 +25,23 @@ public class FixedThreadPool implements ThreadPool {
 
     @Override
     public void execute(Runnable runnable) {
-        synchronized (tasks) {
-            tasks.add(runnable);
-            tasks.notifyAll();
+        if(isRunning) {
+            synchronized (tasks) {
+                tasks.add(runnable);
+                tasks.notifyAll();
+            }
         }
     }
 
     @Override
-    public void stop() {
-        for (Thread thread : threads) {
-            thread.interrupt();
-        }
+    public void shutdown() {
+        isRunning = false;
     }
 
-    class Worker implements Runnable {
+    private final class Worker implements Runnable {
         @Override
         public void run() {
-            while (!Thread.currentThread().isInterrupted()) {
+            while (isRunning) {
                 Runnable task;
                 synchronized (tasks) {
                     while(tasks.size() == 0) {
@@ -50,8 +49,6 @@ public class FixedThreadPool implements ThreadPool {
                             tasks.wait();
                         } catch (InterruptedException ignore) { }
                     }
-                    if(Thread.currentThread().isInterrupted())
-                        break;
                     task = tasks.poll();
                 }
                 task.run();
