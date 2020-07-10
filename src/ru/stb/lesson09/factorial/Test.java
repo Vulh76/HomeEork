@@ -1,4 +1,4 @@
-package ru.stb.lesson9.factorial;
+package ru.stb.lesson09.factorial;
 
 import java.io.IOException;
 

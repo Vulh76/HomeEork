@@ -1,4 +1,4 @@
-package ru.stb.lesson9.threadpool;
+package ru.stb.lesson09.threadpool;
 
 import java.util.Random;
 
@@ -17,6 +17,8 @@ public class Test {
         fixedThreadPool.execute(() -> randomTask("FixedThreadPool. Задача 7 выполнилась!"));
         fixedThreadPool.execute(() -> randomTask("FixedThreadPool. Задача 8 выполнилась!"));
 
+        //fixedThreadPool.shutdown();
+
         ScalableThreadPool scalableThreadPool = new ScalableThreadPool(procCount, procCount * 2);
         scalableThreadPool.start();
         scalableThreadPool.execute(() -> randomTask("ScalableThreadPool. Задача 1 выполнилась!"));
@@ -28,6 +30,8 @@ public class Test {
         scalableThreadPool.execute(() -> randomTask("ScalableThreadPool. Задача 7 выполнилась!"));
         scalableThreadPool.execute(() -> randomTask("ScalableThreadPool. Задача 8 выполнилась!"));
         scalableThreadPool.execute(() -> randomTask("ScalableThreadPool. Задача 9 выполнилась!"));
+
+        //scalableThreadPool.shutdown();
     }
 
     static private void randomTask(String msg) {
