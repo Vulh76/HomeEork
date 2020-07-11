@@ -1,8 +1,6 @@
 package ru.stb.lesson10.executionmanager.api;
 
 public interface Context {
-    // Добавление рабочего потока
-    void addThread(Thread thread);
     // Возвращает количество задач, которые на текущий момент успешно выполнились
     int getCompletedTaskCount();
     // Возвращает количество задач, при выполнении которых произошел Exception

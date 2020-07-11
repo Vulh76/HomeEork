@@ -1,43 +1,29 @@
 package ru.stb.lesson10.executionmanager;
 
 import ru.stb.lesson10.executionmanager.api.*;
-import ru.stb.lesson09.threadpool.FixedThreadPool;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
 public class ExecutionManagerImpl implements ExecutionManager {
-    //private final FixedThreadPool threadPool;
-    private final ExecutorService threadPool;
-    private final Context context;
-
-    public ExecutionManagerImpl() {
-        //threadPool = new FixedThreadPool(Runtime.getRuntime().availableProcessors());
-        threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-        context = new ContextImpl();
-    }
 
     @Override
-    public Context execute(Runnable callback, Runnable... tasks) throws ExecutionException, InterruptedException {
-        Context context = new ContextImpl();
+    public Context execute(Runnable callback, Runnable... tasks) {
+        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-        for (Runnable task : tasks) {
-            Thread thread = new Thread(task);
-            context.addThread(thread);
-            thread.start();
-        }
-        //return context;
-
-        List<Future> futures = new ArrayList<>();
+        List<Future<?>> futures = new ArrayList<>();
         for (Runnable task : tasks) {
             futures.add(threadPool.submit(task));
         }
-        callback.run();
-        for (Future future : futures) {
-            future.get();
-        }
+
         threadPool.shutdown();
-        return context;
+        return new ContextImpl(callback, futures);
+
+        /*CompletableFuture<?>[] futures = new CompletableFuture<?>[tasks.length];
+        for (int i = 0; i < tasks.length; i++) {
+            futures[i] = CompletableFuture.runAsync(tasks[i]);
+        }
+        CompletableFuture<?> future = CompletableFuture.completedFuture(futures);*/
     }
 }

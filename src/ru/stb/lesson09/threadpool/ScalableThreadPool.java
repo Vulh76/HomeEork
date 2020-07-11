@@ -56,10 +56,12 @@ public class ScalableThreadPool implements ThreadPool {
             while (isRunning && !Thread.currentThread().isInterrupted()) {
                 Runnable task;
                 synchronized (lock) {
-                    while(tasks.size() == 0) {
-                        try {
+                    try {
+                        while(tasks.size() == 0) {
                             lock.wait();
-                        } catch (InterruptedException ignore) { }
+                        }
+                    } catch (InterruptedException e) {
+                        break;
                     }
                     task = tasks.poll();
                     if(tasks.size() < threads.size() && threads.size() > minThreadCount) {

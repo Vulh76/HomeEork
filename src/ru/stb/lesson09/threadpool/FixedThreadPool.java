@@ -41,13 +41,15 @@ public class FixedThreadPool implements ThreadPool {
     private final class Worker implements Runnable {
         @Override
         public void run() {
-            while (isRunning) {
+            while (isRunning && !Thread.currentThread().isInterrupted()) {
                 Runnable task;
                 synchronized (tasks) {
-                    while(tasks.size() == 0) {
-                        try {
+                    try {
+                        while(tasks.size() == 0) {
                             tasks.wait();
-                        } catch (InterruptedException ignore) { }
+                        }
+                    } catch (InterruptedException e) {
+                        break;
                     }
                     task = tasks.poll();
                 }
