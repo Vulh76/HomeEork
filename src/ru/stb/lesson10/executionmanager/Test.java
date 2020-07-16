@@ -22,7 +22,7 @@ public class Test {
                     () -> System.out.println("Task 8, Результат: " + HardTask.randomTask(10000)),
                     () -> System.out.println("Task 9, Результат: " + HardTask.randomTask(4000))
             );
-
+            
             //context.interrupt();
 
             Thread.sleep(5000);
