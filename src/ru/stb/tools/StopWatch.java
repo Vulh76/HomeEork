@@ -6,30 +6,31 @@ public class StopWatch {
     private boolean running = false;
 
     public void start() {
-        this.startTime = System.currentTimeMillis();
+        this.startTime = System.nanoTime();
         this.running = true;
     }
 
     public void stop() {
-        this.stopTime = System.currentTimeMillis();
+        this.stopTime = System.nanoTime();
         this.running = false;
     }
 
-    // Elapsed time in milliseconds
-    public long getElapsedTime() {
+    // Elapsed time in nanoseconds
+    public long getElapsedTimeNano() {
         if (running) {
-            return System.currentTimeMillis() - startTime;
+            return System.nanoTime() - startTime;
         } else {
             return stopTime - startTime;
         }
     }
 
+    // Elapsed time in milliseconds
+    public long getElapsedTimeMillis() {
+        return getElapsedTimeNano() / 1000;
+    }
+
     // Elapsed time in seconds
     public long getElapsedTimeSecs() {
-        if (running) {
-            return (System.currentTimeMillis() - startTime) / 1000;
-        } else {
-            return (stopTime - startTime) / 1000;
-        }
+        return getElapsedTimeNano() / 1_000_000;
     }
 }
