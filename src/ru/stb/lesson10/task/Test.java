@@ -1,7 +1,10 @@
 package ru.stb.lesson10.task;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.Callable;
 
 public class Test {
@@ -16,6 +19,7 @@ public class Test {
             //threads.add(new Thread(new TaskRunnable<>(task)));
             threads.add(new Thread(() -> System.out.println(task.get())));
         }
+        Deque<Integer> queue = new ArrayDeque<>();
 
         try {
             for (Thread thread : threads) {

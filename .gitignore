@@ -26,3 +26,5 @@ HELP.md
 /nbdist/
 /.nb-gradle/
 /build/
+/init.cache
+/work.cache
